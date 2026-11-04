@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- SDKs do Firebase Versão Compatível (Garante funcionamento no HTML simples) -->
+    <!-- SDKs do Firebase Versão Compatível -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
@@ -146,8 +146,12 @@
             <!-- ABA: ESTOQUE -->
             <section id="aba-estoque" class="tab-content hidden space-y-6">
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                    <h2 class="text-lg font-bold mb-4 text-slate-700"><i class="fa-solid fa-plus-circle mr-2 text-amber-700"></i> Cadastrar Nova Semijoia</h2>
-                    <form id="form-produto" onsubmit="adicionarProduto(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 id="titulo-form-produto" class="text-lg font-bold text-slate-700"><i class="fa-solid fa-plus-circle mr-2 text-amber-700"></i> Cadastrar Nova Semijoia</h2>
+                        <button id="btn-cancelar-edicao-produto" onclick="cancelarEdicaoProduto()" class="hidden text-xs bg-slate-200 hover:bg-slate-300 px-3 py-1 rounded-lg font-semibold text-slate-700">Cancelar Edição</button>
+                    </div>
+                    <form id="form-produto" onsubmit="salvarProduto(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <input type="hidden" id="prod-id-editando">
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Nome / Descrição</label>
                             <input type="text" id="prod-nome" required placeholder="Ex: Brinco Zircônia Gota" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
@@ -157,10 +161,21 @@
                             <select id="prod-categoria" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none bg-white">
                                 <option>Brincos (Ouro)</option>
                                 <option>Brincos (Ródio Branco)</option>
+                                <option>Brincos (Prata)</option>
                                 <option>Colares (Ouro)</option>
                                 <option>Colares (Ródio Branco)</option>
+                                <option>Colares (Prata)</option>
                                 <option>Anéis</option>
-                                <option>Pulseiras</option>
+                                <option>Anéis (Ouro)</option>
+                                <option>Anéis (Ródio Branco)</option>
+                                <option>Anéis (Prata)</option>
+                                <option>Pulseiras (Ouro)</option>
+                                <option>Pulseiras (Ródio Branco)</option>
+                                <option>Pulseiras (Prata)</option>
+                                <option>Pulseiras (Infantil)</option>
+                                <option>Tornozeleiras (Ouro)</option>
+                                <option>Tornozeleiras (Ródio Branco)</option>
+                                <option>Tornozeleiras (Prata)</option>
                                 <option>Conjuntos</option>
                             </select>
                         </div>
@@ -173,7 +188,7 @@
                             <input type="number" id="prod-qtd" required placeholder="1" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                         </div>
                         <div class="md:col-span-4 flex justify-end">
-                            <button type="submit" class="bg-amber-700 hover:bg-amber-800 text-white font-semibold px-6 py-2 rounded-lg text-sm transition"><i class="fa-solid fa-plus mr-1"></i> Adicionar ao Estoque</button>
+                            <button type="submit" id="btn-submit-produto" class="bg-amber-700 hover:bg-amber-800 text-white font-semibold px-6 py-2 rounded-lg text-sm transition"><i class="fa-solid fa-plus mr-1"></i> Adicionar ao Estoque</button>
                         </div>
                     </form>
                 </div>
@@ -203,22 +218,26 @@
             <!-- ABA: CLIENTES -->
             <section id="aba-clientes" class="tab-content hidden space-y-6">
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                    <h2 class="text-lg font-bold mb-4 text-slate-700">Cadastrar Cliente</h2>
-                    <form id="form-cliente" onsubmit="adicionarCliente(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 id="titulo-form-cliente" class="text-lg font-bold text-slate-700">Cadastrar Cliente</h2>
+                        <button id="btn-cancelar-edicao-cliente" onclick="cancelarEdicaoCliente()" class="hidden text-xs bg-slate-200 hover:bg-slate-300 px-3 py-1 rounded-lg font-semibold text-slate-700">Cancelar Edição</button>
+                    </div>
+                    <form id="form-cliente" onsubmit="salvarCliente(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <input type="hidden" id="cli-id-editando">
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Nome Completo</label>
                             <input type="text" id="cli-nome" required placeholder="Ex: Camila Souza" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">WhatsApp / Telefone</label>
-                            <input type="text" id="cli-tel" required placeholder="(11) 99999-9999" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                            <input type="text" id="cli-tel" required placeholder="(11) 99999-9999" maxlength="15" oninput="mascaraTelefone(this)" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Aniversário (Opcional)</label>
-                            <input type="text" id="cli-aniver" placeholder="DD/MM" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                            <input type="text" id="cli-aniver" placeholder="DD/MM" maxlength="5" oninput="mascaraData(this)" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                         </div>
                         <div class="md:col-span-3 flex justify-end">
-                            <button type="submit" class="bg-amber-700 hover:bg-amber-800 text-white font-semibold px-6 py-2 rounded-lg text-sm transition"><i class="fa-solid fa-user-plus mr-1"></i> Salvar Cliente</button>
+                            <button type="submit" id="btn-submit-cliente" class="bg-amber-700 hover:bg-amber-800 text-white font-semibold px-6 py-2 rounded-lg text-sm transition"><i class="fa-solid fa-user-plus mr-1"></i> Salvar Cliente</button>
                         </div>
                     </form>
                 </div>
@@ -316,8 +335,33 @@
         </main>
     </div>
 
-    <!-- SCRIPT DO FIREBASE (VERSÃO DIRETA) -->
+    <!-- SCRIPTS -->
     <script>
+        // MÁSCARAS DE DIGITAÇÃO AUTOMÁTICA
+        function mascaraTelefone(input) {
+            let v = input.value.replace(/\D/g, "");
+            if (v.length > 11) v = v.slice(0, 11);
+            
+            if (v.length > 7) {
+                v = v.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
+            } else if (v.length > 2) {
+                v = v.replace(/^(\d{2})(\d{0,5})/, "($1) $2");
+            } else if (v.length > 0) {
+                v = v.replace(/^(\d*)/, "($1");
+            }
+            input.value = v;
+        }
+
+        function mascaraData(input) {
+            let v = input.value.replace(/\D/g, "");
+            if (v.length > 4) v = v.slice(0, 4);
+            
+            if (v.length >= 3) {
+                v = v.replace(/^(\d{2})(\d{1,2})/, "$1/$2");
+            }
+            input.value = v;
+        }
+
         // COLE AQUI SUAS CHAVES DO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyBFU2xMISRxuR1j-JcBlKGNfL_sSGuyd5E",
@@ -326,7 +370,7 @@
             storageBucket: "malika-sistema.firebasestorage.app",
             messagingSenderId: "427250319794",
             appId: "1:427250319794:web:25ce022a26fa16b80224ab",
-	    measurementId: "G-LHXLGC4BRF"
+            measurementId: "G-LHXLGC4BRF"
         };
 
         // Inicializar Firebase
@@ -401,34 +445,104 @@
             }
         }
 
-        // SALVAR NO FIREBASE
-        function adicionarProduto(e) {
+        // --- ESTOQUE (COM EDIÇÃO E CADASTRO) ---
+        function salvarProduto(e) {
             e.preventDefault();
-            db.collection("estoque").add({
+            const idEditando = document.getElementById('prod-id-editando').value;
+            const produtoData = {
                 nome: document.getElementById('prod-nome').value,
                 categoria: document.getElementById('prod-categoria').value,
                 preco: parseFloat(document.getElementById('prod-preco').value),
                 qtd: parseInt(document.getElementById('prod-qtd').value)
-            });
+            };
+
+            if (idEditando) {
+                db.collection("estoque").doc(idEditando).update(produtoData).then(() => {
+                    cancelarEdicaoProduto();
+                });
+            } else {
+                db.collection("estoque").add(produtoData);
+                document.getElementById('form-produto').reset();
+            }
+        }
+
+        function prepararEdicaoProduto(id) {
+            const produto = dados.estoque.find(p => p.id === id);
+            if (produto) {
+                document.getElementById('prod-id-editando').value = produto.id;
+                document.getElementById('prod-nome').value = produto.nome;
+                document.getElementById('prod-categoria').value = produto.categoria;
+                document.getElementById('prod-preco').value = produto.preco;
+                document.getElementById('prod-qtd').value = produto.qtd;
+
+                document.getElementById('titulo-form-produto').innerHTML = '<i class="fa-solid fa-pen-to-square mr-2 text-amber-700"></i> Editar Semijoia';
+                document.getElementById('btn-submit-produto').innerHTML = '<i class="fa-solid fa-save mr-1"></i> Salvar Alterações';
+                document.getElementById('btn-cancelar-edicao-produto').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function cancelarEdicaoProduto() {
             document.getElementById('form-produto').reset();
+            document.getElementById('prod-id-editando').value = '';
+            document.getElementById('titulo-form-produto').innerHTML = '<i class="fa-solid fa-plus-circle mr-2 text-amber-700"></i> Cadastrar Nova Semijoia';
+            document.getElementById('btn-submit-produto').innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Adicionar ao Estoque';
+            document.getElementById('btn-cancelar-edicao-produto').classList.add('hidden');
         }
 
         function removerProduto(id) {
-            db.collection("estoque").doc(id).delete();
+            if(confirm('Deseja realmente excluir este produto?')) {
+                db.collection("estoque").doc(id).delete();
+            }
         }
 
-        function adicionarCliente(e) {
+        // --- CLIENTES (COM EDIÇÃO E CADASTRO) ---
+        function salvarCliente(e) {
             e.preventDefault();
-            db.collection("clientes").add({
+            const idEditando = document.getElementById('cli-id-editando').value;
+            const clienteData = {
                 nome: document.getElementById('cli-nome').value,
                 tel: document.getElementById('cli-tel').value,
                 aniver: document.getElementById('cli-aniver').value || '-'
-            });
+            };
+
+            if (idEditando) {
+                db.collection("clientes").doc(idEditando).update(clienteData).then(() => {
+                    cancelarEdicaoCliente();
+                });
+            } else {
+                db.collection("clientes").add(clienteData);
+                document.getElementById('form-cliente').reset();
+            }
+        }
+
+        function prepararEdicaoCliente(id) {
+            const cliente = dados.clientes.find(c => c.id === id);
+            if (cliente) {
+                document.getElementById('cli-id-editando').value = cliente.id;
+                document.getElementById('cli-nome').value = cliente.nome;
+                document.getElementById('cli-tel').value = cliente.tel;
+                document.getElementById('cli-aniver').value = cliente.aniver === '-' ? '' : cliente.aniver;
+
+                document.getElementById('titulo-form-cliente').innerText = 'Editar Cliente';
+                document.getElementById('btn-submit-cliente').innerHTML = '<i class="fa-solid fa-save mr-1"></i> Salvar Alterações';
+                document.getElementById('btn-cancelar-edicao-cliente').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function cancelarEdicaoCliente() {
             document.getElementById('form-cliente').reset();
+            document.getElementById('cli-id-editando').value = '';
+            document.getElementById('titulo-form-cliente').innerText = 'Cadastrar Cliente';
+            document.getElementById('btn-submit-cliente').innerHTML = '<i class="fa-solid fa-user-plus mr-1"></i> Salvar Cliente';
+            document.getElementById('btn-cancelar-edicao-cliente').classList.add('hidden');
         }
 
         function removerCliente(id) {
-            db.collection("clientes").doc(id).delete();
+            if(confirm('Deseja realmente excluir este cliente?')) {
+                db.collection("clientes").doc(id).delete();
+            }
         }
 
         function preencherPrecoVenda() {
@@ -457,12 +571,10 @@
                 return;
             }
 
-            // Atualiza Estoque
             db.collection("estoque").doc(produtoId).update({
                 qtd: produto.qtd - qtdVenda
             });
 
-            // Registra Venda
             db.collection("vendas").add({
                 data: new Date().toLocaleDateString('pt-BR'),
                 cliente: cliente ? cliente.nome : 'Cliente Balcão',
@@ -471,7 +583,6 @@
                 valor: valorTotal
             });
 
-            // Registra Financeiro
             db.collection("financeiro").add({
                 desc: `Venda: ${produto.nome} (${cliente ? cliente.nome : 'Balcão'})`,
                 tipo: 'entrada',
@@ -482,7 +593,9 @@
         }
 
         function removerVenda(id) {
-            db.collection("vendas").doc(id).delete();
+            if(confirm('Deseja realmente excluir esta venda?')) {
+                db.collection("vendas").doc(id).delete();
+            }
         }
 
         function adicionarTransacao(e) {
@@ -496,12 +609,13 @@
         }
 
         function removerTransacao(id) {
-            db.collection("financeiro").doc(id).delete();
+            if(confirm('Deseja realmente excluir este lançamento?')) {
+                db.collection("financeiro").doc(id).delete();
+            }
         }
 
         // DESENHAR NA TELA
         function atualizarInterface() {
-            // Select Clientes
             const selectCli = document.getElementById('venda-cliente');
             if (selectCli) {
                 const valAntigo = selectCli.value;
@@ -510,7 +624,6 @@
                 selectCli.value = valAntigo;
             }
 
-            // Select Produtos
             const selectProd = document.getElementById('venda-produto');
             if (selectProd) {
                 const valAntigo = selectProd.value;
@@ -523,7 +636,6 @@
                 selectProd.value = valAntigo;
             }
 
-            // Tabela Estoque
             let totalPecas = 0;
             const tbodyEstoque = document.getElementById('tabela-estoque-body');
             if (tbodyEstoque) {
@@ -536,8 +648,9 @@
                             <td class="p-4 text-slate-500">${item.categoria}</td>
                             <td class="p-4 text-slate-700 font-semibold">R$ ${item.preco.toFixed(2)}</td>
                             <td class="p-4 text-slate-700">${item.qtd}</td>
-                            <td class="p-4 text-right">
-                                <button onclick="removerProduto('${item.id}')" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 rounded bg-rose-50"><i class="fa-solid fa-trash"></i></button>
+                            <td class="p-4 text-right space-x-1">
+                                <button onclick="prepararEdicaoProduto('${item.id}')" class="text-amber-600 hover:text-amber-800 text-xs px-2 py-1 rounded bg-amber-50" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="removerProduto('${item.id}')" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 rounded bg-rose-50" title="Excluir"><i class="fa-solid fa-trash"></i></button>
                             </td>
                         </tr>
                     `;
@@ -546,7 +659,6 @@
             const elTotalItens = document.getElementById('total-itens');
             if (elTotalItens) elTotalItens.innerText = `${totalPecas} peças`;
 
-            // Tabela Vendas
             const tbodyVendas = document.getElementById('tabela-vendas-body');
             if (tbodyVendas) {
                 tbodyVendas.innerHTML = '';
@@ -559,14 +671,13 @@
                             <td class="p-4 text-slate-700">${item.qtd}</td>
                             <td class="p-4 font-semibold text-emerald-600">R$ ${item.valor.toFixed(2)}</td>
                             <td class="p-4 text-right">
-                                <button onclick="removerVenda('${item.id}')" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 rounded bg-rose-50"><i class="fa-solid fa-trash"></i></button>
+                                <button onclick="removerVenda('${item.id}')" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 rounded bg-rose-50" title="Excluir"><i class="fa-solid fa-trash"></i></button>
                             </td>
                         </tr>
                     `;
                 });
             }
 
-            // Tabela Clientes
             const tbodyClientes = document.getElementById('tabela-clientes-body');
             if (tbodyClientes) {
                 tbodyClientes.innerHTML = '';
@@ -576,15 +687,15 @@
                             <td class="p-4 font-medium text-slate-700">${item.nome}</td>
                             <td class="p-4 text-slate-500">${item.tel}</td>
                             <td class="p-4 text-slate-500">${item.aniver}</td>
-                            <td class="p-4 text-right">
-                                <button onclick="removerCliente('${item.id}')" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 rounded bg-rose-50"><i class="fa-solid fa-trash"></i></button>
+                            <td class="p-4 text-right space-x-1">
+                                <button onclick="prepararEdicaoCliente('${item.id}')" class="text-amber-600 hover:text-amber-800 text-xs px-2 py-1 rounded bg-amber-50" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="removerCliente('${item.id}')" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 rounded bg-rose-50" title="Excluir"><i class="fa-solid fa-trash"></i></button>
                             </td>
                         </tr>
                     `;
                 });
             }
 
-            // Financeiro
             let receita = 0;
             let despesa = 0;
             const tbodyFin = document.getElementById('tabela-financeiro-body');
@@ -606,7 +717,7 @@
                                 ${item.tipo === 'entrada' ? '+' : '-'} R$ ${item.valor.toFixed(2)}
                             </td>
                             <td class="p-4 text-right">
-                                <button onclick="removerTransacao('${item.id}')" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 rounded bg-rose-50"><i class="fa-solid fa-trash"></i></button>
+                                <button onclick="removerTransacao('${item.id}')" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 rounded bg-rose-50" title="Excluir"><i class="fa-solid fa-trash"></i></button>
                             </td>
                         </tr>
                     `;
