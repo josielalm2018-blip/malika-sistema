@@ -245,6 +245,7 @@
                     
                     <form id="form-produto" onsubmit="salvarProduto(event)" class="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <input type="hidden" id="prod-id-editando">
+                        <input type="hidden" id="prod-imagem-base64">
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Nome / Descrição</label>
                             <input type="text" id="prod-nome" required placeholder="Ex: Brinco Zircônia" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
@@ -281,8 +282,8 @@
                             <input type="number" id="prod-qtd" required placeholder="1" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">URL da Imagem</label>
-                            <input type="url" id="prod-imagem" placeholder="https://exemplo.com/foto.jpg" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Foto da Peça (Galeria)</label>
+                            <input type="file" accept="image/*" onchange="converterImagemProduto(event)" class="w-full border rounded-lg p-1.5 text-xs focus:ring-2 focus:ring-amber-500 outline-none bg-slate-50 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200">
                         </div>
                         <div class="md:col-span-5 flex justify-end">
                             <button type="submit" id="btn-submit-produto" class="bg-amber-700 hover:bg-amber-800 text-white font-semibold px-6 py-2 rounded-lg text-sm transition"><i class="fa-solid fa-plus mr-1"></i> Adicionar ao Estoque</button>
@@ -366,7 +367,7 @@
                     <h2 class="text-lg font-bold text-slate-700 flex items-center gap-2">
                         <i class="fa-brands fa-whatsapp text-emerald-600"></i> Central de Mensagens WhatsApp
                     </h2>
-                    <p class="text-xs text-slate-500">Escreva sua mensagem promocional, opcionalmente adicione a foto de uma peça e escolha como deseja disparar.</p>
+                    <p class="text-xs text-slate-500">Escreva sua mensagem promocional, escolha uma foto da galeria e faça seus disparos.</p>
                     
                     <div class="space-y-3">
                         <div>
@@ -374,8 +375,9 @@
                             <textarea id="zap-mensagem" rows="4" placeholder="Olá! Temos novidades incríveis em semijoias folheadas na Malika. Venha conferir!" class="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Link da Imagem / Foto do Produto (Opcional)</label>
-                            <input type="url" id="zap-imagem" placeholder="https://exemplo.com/foto-promocao.jpg" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Selecionar Imagem da Galeria (Opcional)</label>
+                            <input type="file" accept="image/*" id="zap-imagem-input" onchange="converterImagemZap(event)" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none bg-slate-50 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-emerald-100 file:text-emerald-800 hover:file:bg-emerald-200">
+                            <input type="hidden" id="zap-imagem-base64">
                         </div>
 
                         <!-- OPÇÕES DE ENVIO -->
@@ -565,6 +567,27 @@
             input.value = v;
         }
 
+        // CONVERSÃO DE IMAGENS DA GALERIA PARA BASE64
+        function converterImagemProduto(e) {
+            const arquivo = e.target.files[0];
+            if (!arquivo) return;
+            const reader = new FileReader();
+            reader.onload = function(uploadEvt) {
+                document.getElementById('prod-imagem-base64').value = uploadEvt.target.result;
+            };
+            reader.readAsDataURL(arquivo);
+        }
+
+        function converterImagemZap(e) {
+            const arquivo = e.target.files[0];
+            if (!arquivo) return;
+            const reader = new FileReader();
+            reader.onload = function(uploadEvt) {
+                document.getElementById('zap-imagem-base64').value = uploadEvt.target.result;
+            };
+            reader.readAsDataURL(arquivo);
+        }
+
         // CONFIGURAÇÃO DO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyBFU2xMISRxuR1j-JcBlKGNfL_sSGuyd5E",
@@ -658,7 +681,7 @@
         // --- DISPARO EM MASSA WHATSAPP ---
         function dispararParaTodos() {
             const textoBase = document.getElementById('zap-mensagem').value.trim();
-            const imgUrl = document.getElementById('zap-imagem').value.trim();
+            const imgBase64 = document.getElementById('zap-imagem-base64').value.trim();
 
             if (!textoBase) {
                 alert('Por favor, digite a mensagem promocional antes de disparar.');
@@ -679,8 +702,8 @@
                     }
 
                     let mensagemFinal = `Olá *${cliente.nome}*! 👋\n\n` + textoBase;
-                    if (imgUrl) {
-                        mensagemFinal += `\n\n📸 Veja a peça aqui: ${imgUrl}`;
+                    if (imgBase64) {
+                        mensagemFinal += `\n\n📸 Confira a imagem em anexo selecionada da nossa galeria.`;
                     }
 
                     const urlZap = `https://wa.me/${foneLimpo}?text=${encodeURIComponent(mensagemFinal)}`;
@@ -711,7 +734,6 @@
                         const categoria = colunas[1].trim().replace(/^["']|["']/g, '');
                         const preco = parseFloat(colunas[2].trim());
                         const qtd = parseInt(colunas[3].trim());
-                        const imagem = colunas[4] ? colunas[4].trim().replace(/^["']|["']/g, '') : '';
 
                         if (nome && !isNaN(preco) && !isNaN(qtd)) {
                             db.collection("estoque").add({
@@ -719,7 +741,7 @@
                                 categoria: categoria || 'Brincos (Ouro)',
                                 preco: preco,
                                 qtd: qtd,
-                                imagem: imagem
+                                imagem: ''
                             });
                             importados++;
                         }
@@ -735,21 +757,29 @@
         function salvarProduto(e) {
             e.preventDefault();
             const idEditando = document.getElementById('prod-id-editando').value;
+            const imagemAtual = document.getElementById('prod-imagem-base64').value.trim();
+
             const produtoData = {
                 nome: document.getElementById('prod-nome').value,
                 categoria: document.getElementById('prod-categoria').value,
                 preco: parseFloat(document.getElementById('prod-preco').value),
                 qtd: parseInt(document.getElementById('prod-qtd').value),
-                imagem: document.getElementById('prod-imagem').value.trim()
+                imagem: imagemAtual
             };
 
             if (idEditando) {
+                if (!imagemAtual) {
+                    const prodAntigo = dados.estoque.find(p => p.id === idEditando);
+                    if (prodAntigo) produtoData.imagem = prodAntigo.imagem || '';
+                }
+
                 db.collection("estoque").doc(idEditando).update(produtoData).then(() => {
                     cancelarEdicaoProduto();
                 });
             } else {
                 db.collection("estoque").add(produtoData);
                 document.getElementById('form-produto').reset();
+                document.getElementById('prod-imagem-base64').value = '';
             }
         }
 
@@ -761,7 +791,7 @@
                 document.getElementById('prod-categoria').value = produto.categoria;
                 document.getElementById('prod-preco').value = produto.preco;
                 document.getElementById('prod-qtd').value = produto.qtd;
-                document.getElementById('prod-imagem').value = produto.imagem || '';
+                document.getElementById('prod-imagem-base64').value = produto.imagem || '';
 
                 document.getElementById('titulo-form-produto').innerHTML = '<i class="fa-solid fa-pen-to-square mr-2 text-amber-700"></i> Editar Semijoia';
                 document.getElementById('btn-submit-produto').innerHTML = '<i class="fa-solid fa-save mr-1"></i> Salvar Alterações';
@@ -773,6 +803,7 @@
         function cancelarEdicaoProduto() {
             document.getElementById('form-produto').reset();
             document.getElementById('prod-id-editando').value = '';
+            document.getElementById('prod-imagem-base64').value = '';
             document.getElementById('titulo-form-produto').innerHTML = '<i class="fa-solid fa-plus-circle mr-2 text-amber-700"></i> Cadastrar Nova Semijoia';
             document.getElementById('btn-submit-produto').innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Adicionar ao Estoque';
             document.getElementById('btn-cancelar-edicao-produto').classList.add('hidden');
@@ -871,7 +902,7 @@
                 produto: produto.nome,
                 qtd: qtdVenda,
                 valor: valorTotal,
-                statusPagamento: 'pendente' // Padrão pendente ao vender
+                statusPagamento: 'pendente'
             });
 
             db.collection("financeiro").add({
@@ -1007,7 +1038,7 @@
                         produtosEsgotando.push(item);
                     }
 
-                    const fotoHtml = item.imagem ? `<img src="${item.imagem}" class="w-10 h-10 object-cover rounded-lg shadow-sm border" onerror="this.src='https://via.placeholder.com/40?text=Foto'">` : `<div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 text-xs"><i class="fa-solid fa-image"></i></div>`;
+                    const fotoHtml = item.imagem ? `<img src="${item.imagem}" class="w-10 h-10 object-cover rounded-lg shadow-sm border">` : `<div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 text-xs"><i class="fa-solid fa-image"></i></div>`;
                     
                     tbodyEstoque.innerHTML += `
                         <tr class="hover:bg-slate-50">
@@ -1078,7 +1109,6 @@
             }
 
             // --- ATUALIZAR DASHBOARD ---
-            // Data atual formato DD/MM
             const hoje = new Date();
             const dia = String(hoje.getDate()).padStart(2, '0');
             const mes = String(hoje.getMonth() + 1).padStart(2, '0');
@@ -1086,7 +1116,6 @@
 
             let aniversariantesHoje = dados.clientes.filter(c => c.aniver === dataHojeFormatada);
             
-            // Card Aniversariantes
             document.getElementById('dash-aniver-qtd').innerText = aniversariantesHoje.length;
             document.getElementById('badge-aniver').innerText = `${aniversariantesHoje.length} hoje`;
             
@@ -1117,7 +1146,6 @@
                 }
             }
 
-            // Card Produtos Esgotando
             document.getElementById('badge-esgotando').innerText = `${produtosEsgotando.length} itens`;
             const tbodyEsgotando = document.getElementById('tabela-esgotando-body');
             if (tbodyEsgotando) {
@@ -1137,7 +1165,6 @@
                 }
             }
 
-            // Financeiro e Dashboard Cards
             let receita = 0;
             let despesa = 0;
             const tbodyFin = document.getElementById('tabela-financeiro-body');
@@ -1172,12 +1199,10 @@
             if (document.getElementById('fin-despesa')) document.getElementById('fin-despesa').innerText = `R$ ${despesa.toFixed(2)}`;
             if (document.getElementById('fin-saldo')) document.getElementById('fin-saldo').innerText = `R$ ${saldoCaixa.toFixed(2)}`;
 
-            // Atualiza na Dashboard
             if (document.getElementById('dash-saldo')) document.getElementById('dash-saldo').innerText = `R$ ${saldoCaixa.toFixed(2)}`;
             if (document.getElementById('dash-pendentes')) document.getElementById('dash-pendentes').innerText = `R$ ${totalPendentes.toFixed(2)}`;
             if (document.getElementById('dash-pecas')) document.getElementById('dash-pecas').innerText = `${totalPecas} peças`;
 
-            // WhatsApp Contador Todos
             const elZapContador = document.getElementById('zap-contador-todos');
             if (elZapContador) elZapContador.innerText = dados.clientes.length;
 
@@ -1195,12 +1220,7 @@
 
                         const gerarLinkIndividual = () => {
                             let textoBase = document.getElementById('zap-mensagem').value.trim();
-                            let imgUrl = document.getElementById('zap-imagem').value.trim();
-                            
                             let mensagemFinal = `Olá *${cliente.nome}*! 👋\n\n` + textoBase;
-                            if (imgUrl) {
-                                mensagemFinal += `\n\n📸 Veja a peça aqui: ${imgUrl}`;
-                            }
                             return `https://wa.me/${foneLimpo}?text=${encodeURIComponent(mensagemFinal)}`;
                         };
 
