@@ -90,17 +90,92 @@
 
         <!-- MENU DE ABAS -->
         <nav class="bg-white shadow-sm border-b flex justify-around md:justify-start md:space-x-2 px-4 overflow-x-auto no-print">
-            <button onclick="mudarAba('vendas')" id="btn-vendas" class="tab-btn py-3 px-4 border-b-2 border-amber-700 text-amber-700 font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-cash-register"></i> Vendas</button>
+            <button onclick="mudarAba('dashboard')" id="btn-dashboard" class="tab-btn py-3 px-4 border-b-2 border-amber-700 text-amber-700 font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-chart-pie"></i> Dashboard</button>
+            <button onclick="mudarAba('vendas')" id="btn-vendas" class="tab-btn py-3 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-cash-register"></i> Vendas</button>
             <button onclick="mudarAba('estoque')" id="btn-estoque" class="tab-btn py-3 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-boxes-stacked"></i> Estoque</button>
             <button onclick="mudarAba('clientes')" id="btn-clientes" class="tab-btn py-3 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-users"></i> Clientes</button>
+            <button onclick="mudarAba('whatsapp')" id="btn-whatsapp" class="tab-btn py-3 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-sm flex items-center gap-2"><i class="fa-brands fa-whatsapp text-emerald-600"></i> WhatsApp em Massa</button>
             <button onclick="mudarAba('financeiro')" id="btn-financeiro" class="tab-btn py-3 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-wallet"></i> Financeiro</button>
         </nav>
 
         <!-- CONTEÚDO DAS ABAS -->
         <main class="max-w-6xl mx-auto p-4 md:p-6 space-y-6">
 
+            <!-- ABA: DASHBOARD -->
+            <section id="aba-dashboard" class="tab-content space-y-6">
+                <!-- CARDS DE RESUMO -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-400 uppercase">Caixa Atual</p>
+                            <h3 id="dash-saldo" class="text-2xl font-bold text-slate-700 mt-1">R$ 0,00</h3>
+                        </div>
+                        <div class="bg-amber-50 text-amber-700 p-3 rounded-full"><i class="fa-solid fa-wallet text-xl"></i></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-400 uppercase">Pagamentos Pendentes</p>
+                            <h3 id="dash-pendentes" class="text-2xl font-bold text-amber-600 mt-1">R$ 0,00</h3>
+                        </div>
+                        <div class="bg-amber-50 text-amber-600 p-3 rounded-full"><i class="fa-solid fa-clock-rotate-left text-xl"></i></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-400 uppercase">Total Peças em Estoque</p>
+                            <h3 id="dash-pecas" class="text-2xl font-bold text-emerald-600 mt-1">0 peças</h3>
+                        </div>
+                        <div class="bg-emerald-50 text-emerald-600 p-3 rounded-full"><i class="fa-solid fa-boxes-stacked text-xl"></i></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-400 uppercase">Aniversariantes Hoje</p>
+                            <h3 id="dash-aniver-qtd" class="text-2xl font-bold text-rose-600 mt-1">0</h3>
+                        </div>
+                        <div class="bg-rose-50 text-rose-600 p-3 rounded-full"><i class="fa-solid fa-cake-candles text-xl"></i></div>
+                    </div>
+                </div>
+
+                <!-- PAINÉIS DE ALERTAS E DESTAQUES -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- ANIVERSARIANTES DO DIA -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
+                        <div class="p-4 border-b bg-rose-50/50 flex justify-between items-center">
+                            <h3 class="font-bold text-rose-800 flex items-center gap-2"><i class="fa-solid fa-cake-candles"></i> Aniversariantes de Hoje</h3>
+                            <span id="badge-aniver" class="text-xs bg-rose-100 text-rose-700 px-2.5 py-0.5 rounded-full font-semibold">0 hoje</span>
+                        </div>
+                        <div class="p-4 flex-1">
+                            <div id="lista-aniversariantes" class="space-y-3">
+                                <p class="text-xs text-slate-400 text-center py-6">Nenhum cliente faz aniversário hoje.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ITENS ESGOTANDO OU BAIXOS -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
+                        <div class="p-4 border-b bg-amber-50/50 flex justify-between items-center">
+                            <h3 class="font-bold text-amber-800 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Produtos com Estoque Baixo (≤ 2)</h3>
+                            <span id="badge-esgotando" class="text-xs bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-semibold">0 itens</span>
+                        </div>
+                        <div class="p-4 flex-1 overflow-x-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead>
+                                    <tr class="text-xs text-slate-400 uppercase border-b">
+                                        <th class="pb-2">Produto</th>
+                                        <th class="pb-2">Categoria</th>
+                                        <th class="pb-2 text-right">Qtd</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-esgotando-body" class="divide-y divide-slate-100">
+                                    <tr><td colspan="3" class="text-center text-xs text-slate-400 py-6">Nenhum produto crítico no momento.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- ABA: VENDAS -->
-            <section id="aba-vendas" class="tab-content space-y-6">
+            <section id="aba-vendas" class="tab-content hidden space-y-6">
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
                     <h2 class="text-lg font-bold mb-4 text-slate-700"><i class="fa-solid fa-cart-shopping mr-2 text-amber-700"></i> Registrar Nova Venda</h2>
                     <form id="form-venda" onsubmit="registrarVenda(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -131,8 +206,9 @@
                 </div>
 
                 <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="p-4 border-b">
+                    <div class="p-4 border-b flex justify-between items-center">
                         <h3 class="font-bold text-slate-700">Histórico de Vendas Realizadas</h3>
+                        <span class="text-xs text-slate-400">Clique no status para alternar entre Concluído / Pendente</span>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
@@ -143,6 +219,7 @@
                                     <th class="p-4">Produto</th>
                                     <th class="p-4">Qtd</th>
                                     <th class="p-4">Total</th>
+                                    <th class="p-4">Status Pagamento</th>
                                     <th class="p-4 text-right">Ações</th>
                                 </tr>
                             </thead>
@@ -158,7 +235,6 @@
                     <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
                         <h2 id="titulo-form-produto" class="text-lg font-bold text-slate-700"><i class="fa-solid fa-plus-circle mr-2 text-amber-700"></i> Cadastrar Nova Semijoia</h2>
                         <div class="flex gap-2">
-                            <!-- Botão para importar Excel/CSV -->
                             <label class="cursor-pointer bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-3 py-2 rounded-lg font-semibold transition flex items-center gap-1">
                                 <i class="fa-solid fa-file-excel"></i> Importar Planilha CSV
                                 <input type="file" accept=".csv" onchange="importarPlanilhaEstoque(event)" class="hidden">
@@ -166,13 +242,12 @@
                             <button id="btn-cancelar-edicao-produto" onclick="cancelarEdicaoProduto()" class="hidden text-xs bg-slate-200 hover:bg-slate-300 px-3 py-1 rounded-lg font-semibold text-slate-700">Cancelar Edição</button>
                         </div>
                     </div>
-                    <p class="text-xs text-slate-400 mb-4">* Para importar do Excel: salve sua planilha em formato **CSV (Delimitado por vírgula)** com as colunas: `nome`, `categoria`, `preco`, `qtd`.</p>
                     
-                    <form id="form-produto" onsubmit="salvarProduto(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <form id="form-produto" onsubmit="salvarProduto(event)" class="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <input type="hidden" id="prod-id-editando">
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Nome / Descrição</label>
-                            <input type="text" id="prod-nome" required placeholder="Ex: Brinco Zircônia Gota" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                            <input type="text" id="prod-nome" required placeholder="Ex: Brinco Zircônia" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Categoria & Banho</label>
@@ -198,14 +273,18 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Preço de Venda (R$)</label>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Preço (R$)</label>
                             <input type="number" step="0.01" id="prod-preco" required placeholder="0,00" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Quantidade</label>
                             <input type="number" id="prod-qtd" required placeholder="1" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                         </div>
-                        <div class="md:col-span-4 flex justify-end">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">URL da Imagem</label>
+                            <input type="url" id="prod-imagem" placeholder="https://exemplo.com/foto.jpg" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                        </div>
+                        <div class="md:col-span-5 flex justify-end">
                             <button type="submit" id="btn-submit-produto" class="bg-amber-700 hover:bg-amber-800 text-white font-semibold px-6 py-2 rounded-lg text-sm transition"><i class="fa-solid fa-plus mr-1"></i> Adicionar ao Estoque</button>
                         </div>
                     </form>
@@ -220,6 +299,7 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b">
+                                    <th class="p-4">Foto</th>
                                     <th class="p-4">Produto</th>
                                     <th class="p-4">Categoria / Banho</th>
                                     <th class="p-4">Preço</th>
@@ -275,6 +355,53 @@
                                 </tr>
                             </thead>
                             <tbody id="tabela-clientes-body" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ABA: WHATSAPP EM MASSA -->
+            <section id="aba-whatsapp" class="tab-content hidden space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 space-y-4">
+                    <h2 class="text-lg font-bold text-slate-700 flex items-center gap-2">
+                        <i class="fa-brands fa-whatsapp text-emerald-600"></i> Central de Mensagens WhatsApp
+                    </h2>
+                    <p class="text-xs text-slate-500">Escreva sua mensagem promocional, opcionalmente adicione a foto de uma peça e escolha como deseja disparar.</p>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Mensagem Promocional</label>
+                            <textarea id="zap-mensagem" rows="4" placeholder="Olá! Temos novidades incríveis em semijoias folheadas na Malika. Venha conferir!" class="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Link da Imagem / Foto do Produto (Opcional)</label>
+                            <input type="url" id="zap-imagem" placeholder="https://exemplo.com/foto-promocao.jpg" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                        </div>
+
+                        <!-- OPÇÕES DE ENVIO -->
+                        <div class="pt-2 flex flex-wrap gap-3">
+                            <button onclick="dispararParaTodos()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition shadow-sm flex items-center gap-2">
+                                <i class="fa-solid fa-paper-plane"></i> Disparar para Todos os Clientes (<span id="zap-contador-todos">0</span>)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-4 border-b flex justify-between items-center">
+                        <h3 class="font-bold text-slate-700">Envio Individual por Cliente</h3>
+                        <span class="text-xs text-slate-500">Clique no botão ao lado de cada cliente para envio personalizado</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b">
+                                    <th class="p-4">Cliente</th>
+                                    <th class="p-4">WhatsApp</th>
+                                    <th class="p-4 text-right">Ação Individual</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-whatsapp-body" class="divide-y divide-slate-100 text-sm"></tbody>
                         </table>
                     </div>
                 </div>
@@ -520,6 +647,50 @@
             }
         }
 
+        // --- ALTERAR STATUS DE PAGAMENTO DA VENDA ---
+        function alternarStatusPagamento(id, statusAtual) {
+            const novoStatus = statusAtual === 'concluido' ? 'pendente' : 'concluido';
+            db.collection("vendas").doc(id).update({
+                statusPagamento: novoStatus
+            });
+        }
+
+        // --- DISPARO EM MASSA WHATSAPP ---
+        function dispararParaTodos() {
+            const textoBase = document.getElementById('zap-mensagem').value.trim();
+            const imgUrl = document.getElementById('zap-imagem').value.trim();
+
+            if (!textoBase) {
+                alert('Por favor, digite a mensagem promocional antes de disparar.');
+                document.getElementById('zap-mensagem').focus();
+                return;
+            }
+
+            if (dados.clientes.length === 0) {
+                alert('Não há clientes cadastrados para o envio.');
+                return;
+            }
+
+            if (confirm(`Deseja iniciar o envio em massa para todos os ${dados.clientes.length} clientes cadastrados?`)) {
+                dados.clientes.forEach((cliente, index) => {
+                    let foneLimpo = cliente.tel.replace(/\D/g, '');
+                    if (foneLimpo.length <= 11 && !foneLimpo.startsWith('55')) {
+                        foneLimpo = '55' + foneLimpo;
+                    }
+
+                    let mensagemFinal = `Olá *${cliente.nome}*! 👋\n\n` + textoBase;
+                    if (imgUrl) {
+                        mensagemFinal += `\n\n📸 Veja a peça aqui: ${imgUrl}`;
+                    }
+
+                    const urlZap = `https://wa.me/${foneLimpo}?text=${encodeURIComponent(mensagemFinal)}`;
+                    setTimeout(() => {
+                        window.open(urlZap, '_blank');
+                    }, index * 800);
+                });
+            }
+        }
+
         // --- IMPORTAR PLANILHA CSV NO ESTOQUE ---
         function importarPlanilhaEstoque(e) {
             const arquivo = e.target.files[0];
@@ -530,7 +701,6 @@
                 const linhas = evt.target.result.split('\n');
                 let importados = 0;
 
-                // Ignora o cabeçalho (linha 0)
                 for (let i = 1; i < linhas.length; i++) {
                     const linha = linhas[i].trim();
                     if (!linha) continue;
@@ -541,20 +711,22 @@
                         const categoria = colunas[1].trim().replace(/^["']|["']/g, '');
                         const preco = parseFloat(colunas[2].trim());
                         const qtd = parseInt(colunas[3].trim());
+                        const imagem = colunas[4] ? colunas[4].trim().replace(/^["']|["']/g, '') : '';
 
                         if (nome && !isNaN(preco) && !isNaN(qtd)) {
                             db.collection("estoque").add({
                                 nome: nome,
                                 categoria: categoria || 'Brincos (Ouro)',
                                 preco: preco,
-                                qtd: qtd
+                                qtd: qtd,
+                                imagem: imagem
                             });
                             importados++;
                         }
                     }
                 }
                 alert(`${importados} produtos foram importados com sucesso para o estoque!`);
-                e.target.value = ''; // Limpa o input file
+                e.target.value = '';
             };
             leitor.readAsText(arquivo);
         }
@@ -567,7 +739,8 @@
                 nome: document.getElementById('prod-nome').value,
                 categoria: document.getElementById('prod-categoria').value,
                 preco: parseFloat(document.getElementById('prod-preco').value),
-                qtd: parseInt(document.getElementById('prod-qtd').value)
+                qtd: parseInt(document.getElementById('prod-qtd').value),
+                imagem: document.getElementById('prod-imagem').value.trim()
             };
 
             if (idEditando) {
@@ -588,6 +761,7 @@
                 document.getElementById('prod-categoria').value = produto.categoria;
                 document.getElementById('prod-preco').value = produto.preco;
                 document.getElementById('prod-qtd').value = produto.qtd;
+                document.getElementById('prod-imagem').value = produto.imagem || '';
 
                 document.getElementById('titulo-form-produto').innerHTML = '<i class="fa-solid fa-pen-to-square mr-2 text-amber-700"></i> Editar Semijoia';
                 document.getElementById('btn-submit-produto').innerHTML = '<i class="fa-solid fa-save mr-1"></i> Salvar Alterações';
@@ -696,7 +870,8 @@
                 cliente: cliente ? cliente.nome : 'Cliente Balcão',
                 produto: produto.nome,
                 qtd: qtdVenda,
-                valor: valorTotal
+                valor: valorTotal,
+                statusPagamento: 'pendente' // Padrão pendente ao vender
             });
 
             db.collection("financeiro").add({
@@ -735,7 +910,7 @@
             }
         }
 
-        // --- GERAR RELATÓRIO PDF FINANCEIRO COM FILTRO DE DATA ---
+        // --- RELATÓRIO PDF FINANCEIRO ---
         function gerarRelatorioPDF() {
             const dataInicio = document.getElementById('filtro-data-inicio').value;
             const dataFim = document.getElementById('filtro-data-fim').value;
@@ -790,15 +965,15 @@
 
             document.getElementById('pdf-data-geracao').innerText = new Date().toLocaleString('pt-BR');
 
-            // Exibe a área do PDF, dispara a impressão e oculta novamente
             const relatorioEl = document.getElementById('relatorio-pdf');
             relatorioEl.classList.remove('hidden');
             window.print();
             relatorioEl.classList.add('hidden');
         }
 
-        // DESENHAR NA TELA
+        // DESENHAR NA TELA E ATUALIZAR DASHBOARD
         function atualizarInterface() {
+            // Select Clientes
             const selectCli = document.getElementById('venda-cliente');
             if (selectCli) {
                 const valAntigo = selectCli.value;
@@ -807,6 +982,7 @@
                 selectCli.value = valAntigo;
             }
 
+            // Select Produtos
             const selectProd = document.getElementById('venda-produto');
             if (selectProd) {
                 const valAntigo = selectProd.value;
@@ -819,14 +995,23 @@
                 selectProd.value = valAntigo;
             }
 
+            // Tabela Estoque
             let totalPecas = 0;
+            let produtosEsgotando = [];
             const tbodyEstoque = document.getElementById('tabela-estoque-body');
             if (tbodyEstoque) {
                 tbodyEstoque.innerHTML = '';
                 dados.estoque.forEach(item => {
                     totalPecas += item.qtd;
+                    if (item.qtd <= 2) {
+                        produtosEsgotando.push(item);
+                    }
+
+                    const fotoHtml = item.imagem ? `<img src="${item.imagem}" class="w-10 h-10 object-cover rounded-lg shadow-sm border" onerror="this.src='https://via.placeholder.com/40?text=Foto'">` : `<div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 text-xs"><i class="fa-solid fa-image"></i></div>`;
+                    
                     tbodyEstoque.innerHTML += `
                         <tr class="hover:bg-slate-50">
+                            <td class="p-4">${fotoHtml}</td>
                             <td class="p-4 font-medium text-slate-700">${item.nome}</td>
                             <td class="p-4 text-slate-500">${item.categoria}</td>
                             <td class="p-4 text-slate-700 font-semibold">R$ ${item.preco.toFixed(2)}</td>
@@ -842,10 +1027,21 @@
             const elTotalItens = document.getElementById('total-itens');
             if (elTotalItens) elTotalItens.innerText = `${totalPecas} peças`;
 
+            // Tabela Vendas
+            let totalPendentes = 0;
             const tbodyVendas = document.getElementById('tabela-vendas-body');
             if (tbodyVendas) {
                 tbodyVendas.innerHTML = '';
                 dados.vendas.forEach(item => {
+                    const status = item.statusPagamento || 'pendente';
+                    if (status === 'pendente') {
+                        totalPendentes += item.valor;
+                    }
+
+                    const badgeStatus = status === 'concluido' 
+                        ? `<button onclick="alternarStatusPagamento('${item.id}', '${status}')" class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 hover:bg-emerald-200 transition" title="Clique para alterar"><i class="fa-solid fa-circle-check"></i> Concluído</button>`
+                        : `<button onclick="alternarStatusPagamento('${item.id}', '${status}')" class="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 hover:bg-amber-200 transition" title="Clique para alterar"><i class="fa-solid fa-clock"></i> Pendente</button>`;
+
                     tbodyVendas.innerHTML += `
                         <tr class="hover:bg-slate-50">
                             <td class="p-4 text-slate-500">${item.data}</td>
@@ -853,6 +1049,7 @@
                             <td class="p-4 text-slate-700">${item.produto}</td>
                             <td class="p-4 text-slate-700">${item.qtd}</td>
                             <td class="p-4 font-semibold text-emerald-600">R$ ${item.valor.toFixed(2)}</td>
+                            <td class="p-4">${badgeStatus}</td>
                             <td class="p-4 text-right">
                                 <button onclick="removerVenda('${item.id}')" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 rounded bg-rose-50" title="Excluir"><i class="fa-solid fa-trash"></i></button>
                             </td>
@@ -861,6 +1058,7 @@
                 });
             }
 
+            // Tabela Clientes
             const tbodyClientes = document.getElementById('tabela-clientes-body');
             if (tbodyClientes) {
                 tbodyClientes.innerHTML = '';
@@ -879,6 +1077,67 @@
                 });
             }
 
+            // --- ATUALIZAR DASHBOARD ---
+            // Data atual formato DD/MM
+            const hoje = new Date();
+            const dia = String(hoje.getDate()).padStart(2, '0');
+            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+            const dataHojeFormatada = `${dia}/${mes}`;
+
+            let aniversariantesHoje = dados.clientes.filter(c => c.aniver === dataHojeFormatada);
+            
+            // Card Aniversariantes
+            document.getElementById('dash-aniver-qtd').innerText = aniversariantesHoje.length;
+            document.getElementById('badge-aniver').innerText = `${aniversariantesHoje.length} hoje`;
+            
+            const listaAniverEl = document.getElementById('lista-aniversariantes');
+            if (listaAniverEl) {
+                listaAniverEl.innerHTML = '';
+                if (aniversariantesHoje.length === 0) {
+                    listaAniverEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Nenhum cliente faz aniversário hoje (${dataHojeFormatada}).</p>`;
+                } else {
+                    aniversariantesHoje.forEach(c => {
+                        let foneLimpo = c.tel.replace(/\D/g, '');
+                        if (foneLimpo.length <= 11 && !foneLimpo.startsWith('55')) foneLimpo = '55' + foneLimpo;
+                        const msgParabens = `Parabéns ${c.nome}! 🥳🎂 A equipe da Malika Semijóias deseja um feliz aniversário repleto de felicidades e muito brilho! Venha conferir nossas novidades. ✨`;
+                        const linkZap = `https://wa.me/${foneLimpo}?text=${encodeURIComponent(msgParabens)}`;
+
+                        listaAniverEl.innerHTML += `
+                            <div class="flex items-center justify-between bg-rose-50/70 p-3 rounded-xl border border-rose-100">
+                                <div>
+                                    <h4 class="font-bold text-slate-700 text-sm">${c.nome}</h4>
+                                    <p class="text-xs text-slate-500"><i class="fa-solid fa-phone mr-1"></i> ${c.tel}</p>
+                                </div>
+                                <a href="${linkZap}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-2 rounded-lg font-semibold transition inline-flex items-center gap-1.5 shadow-sm">
+                                    <i class="fa-brands fa-whatsapp"></i> Parabéns
+                                </a>
+                            </div>
+                        `;
+                    });
+                }
+            }
+
+            // Card Produtos Esgotando
+            document.getElementById('badge-esgotando').innerText = `${produtosEsgotando.length} itens`;
+            const tbodyEsgotando = document.getElementById('tabela-esgotando-body');
+            if (tbodyEsgotando) {
+                tbodyEsgotando.innerHTML = '';
+                if (produtosEsgotando.length === 0) {
+                    tbodyEsgotando.innerHTML = `<tr><td colspan="3" class="text-center text-xs text-slate-400 py-6">Nenhum produto crítico no momento.</td></tr>`;
+                } else {
+                    produtosEsgotando.forEach(p => {
+                        tbodyEsgotando.innerHTML += `
+                            <tr>
+                                <td class="py-2 font-medium text-slate-700">${p.nome}</td>
+                                <td class="py-2 text-slate-500">${p.categoria}</td>
+                                <td class="py-2 text-right font-bold text-rose-600">${p.qtd} un</td>
+                            </tr>
+                        `;
+                    });
+                }
+            }
+
+            // Financeiro e Dashboard Cards
             let receita = 0;
             let despesa = 0;
             const tbodyFin = document.getElementById('tabela-financeiro-body');
@@ -908,13 +1167,57 @@
                 });
             }
 
-            const elReceita = document.getElementById('fin-receita');
-            const elDespesa = document.getElementById('fin-despesa');
-            const elSaldo = document.getElementById('fin-saldo');
+            const saldoCaixa = receita - despesa;
+            if (document.getElementById('fin-receita')) document.getElementById('fin-receita').innerText = `R$ ${receita.toFixed(2)}`;
+            if (document.getElementById('fin-despesa')) document.getElementById('fin-despesa').innerText = `R$ ${despesa.toFixed(2)}`;
+            if (document.getElementById('fin-saldo')) document.getElementById('fin-saldo').innerText = `R$ ${saldoCaixa.toFixed(2)}`;
 
-            if (elReceita) elReceita.innerText = `R$ ${receita.toFixed(2)}`;
-            if (elDespesa) elDespesa.innerText = `R$ ${despesa.toFixed(2)}`;
-            if (elSaldo) elSaldo.innerText = `R$ ${(receita - despesa).toFixed(2)}`;
+            // Atualiza na Dashboard
+            if (document.getElementById('dash-saldo')) document.getElementById('dash-saldo').innerText = `R$ ${saldoCaixa.toFixed(2)}`;
+            if (document.getElementById('dash-pendentes')) document.getElementById('dash-pendentes').innerText = `R$ ${totalPendentes.toFixed(2)}`;
+            if (document.getElementById('dash-pecas')) document.getElementById('dash-pecas').innerText = `${totalPecas} peças`;
+
+            // WhatsApp Contador Todos
+            const elZapContador = document.getElementById('zap-contador-todos');
+            if (elZapContador) elZapContador.innerText = dados.clientes.length;
+
+            const tbodyZap = document.getElementById('tabela-whatsapp-body');
+            if (tbodyZap) {
+                tbodyZap.innerHTML = '';
+                if (dados.clientes.length === 0) {
+                    tbodyZap.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400">Nenhum cliente cadastrado.</td></tr>`;
+                } else {
+                    dados.clientes.forEach(cliente => {
+                        let foneLimpo = cliente.tel.replace(/\D/g, '');
+                        if (foneLimpo.length <= 11 && !foneLimpo.startsWith('55')) {
+                            foneLimpo = '55' + foneLimpo;
+                        }
+
+                        const gerarLinkIndividual = () => {
+                            let textoBase = document.getElementById('zap-mensagem').value.trim();
+                            let imgUrl = document.getElementById('zap-imagem').value.trim();
+                            
+                            let mensagemFinal = `Olá *${cliente.nome}*! 👋\n\n` + textoBase;
+                            if (imgUrl) {
+                                mensagemFinal += `\n\n📸 Veja a peça aqui: ${imgUrl}`;
+                            }
+                            return `https://wa.me/${foneLimpo}?text=${encodeURIComponent(mensagemFinal)}`;
+                        };
+
+                        tbodyZap.innerHTML += `
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-4 font-medium text-slate-700">${cliente.nome}</td>
+                                <td class="p-4 text-slate-500">${cliente.tel}</td>
+                                <td class="p-4 text-right">
+                                    <a href="#" onclick="this.href=gerarLinkIndividual()" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-2 rounded-lg font-semibold transition inline-flex items-center gap-1.5 shadow-sm">
+                                        <i class="fa-brands fa-whatsapp text-sm"></i> Enviar Individual
+                                    </a>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
