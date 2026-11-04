@@ -7,6 +7,10 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- SDKs do Firebase Versão Compatível (Garante funcionamento no HTML simples) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
 
@@ -66,14 +70,16 @@
                 <i class="fa-solid fa-gem"></i> Malika Semijóias
             </h1>
             <div class="flex items-center gap-3">
-                <span class="text-xs bg-amber-800 px-3 py-1 rounded-full uppercase tracking-wider font-semibold">Sistema Pro</span>
+                <span id="status-nuvem" class="text-xs bg-emerald-800 px-3 py-1 rounded-full uppercase tracking-wider font-semibold flex items-center gap-1">
+                    <i class="fa-solid fa-cloud"></i> Nuvem Conectada
+                </span>
                 <button onclick="realizarLogout()" class="bg-amber-800 hover:bg-rose-700 text-white text-xs px-3 py-1 rounded-full transition flex items-center gap-1">
                     <i class="fa-solid fa-right-from-bracket"></i> Sair
                 </button>
             </div>
         </header>
 
-        <!-- MENU DE ABAS (Consignado removido) -->
+        <!-- MENU DE ABAS -->
         <nav class="bg-white shadow-sm border-b flex justify-around md:justify-start md:space-x-2 px-4 overflow-x-auto">
             <button onclick="mudarAba('vendas')" id="btn-vendas" class="tab-btn py-3 px-4 border-b-2 border-amber-700 text-amber-700 font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-cash-register"></i> Vendas</button>
             <button onclick="mudarAba('estoque')" id="btn-estoque" class="tab-btn py-3 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-boxes-stacked"></i> Estoque</button>
@@ -310,9 +316,47 @@
         </main>
     </div>
 
-    <!-- SCRIPTS -->
+    <!-- SCRIPT DO FIREBASE (VERSÃO DIRETA) -->
     <script>
-        // LÓGICA DE LOGIN E SESSÃO
+        // COLE AQUI SUAS CHAVES DO FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyBFU2xMISRxuR1j-JcBlKGNfL_sSGuyd5E",
+            authDomain: "malika-sistema.firebaseapp.com",
+            projectId: "malika-sistema",
+            storageBucket: "malika-sistema.firebasestorage.app",
+            messagingSenderId: "427250319794",
+            appId: "1:427250319794:web:25ce022a26fa16b80224ab",
+	    measurementId: "G-LHXLGC4BRF"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let dados = { estoque: [], vendas: [], clientes: [], financeiro: [] };
+
+        // Escutando dados em Tempo Real do Firebase
+        db.collection("estoque").onSnapshot(snapshot => {
+            dados.estoque = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            atualizarInterface();
+        });
+
+        db.collection("vendas").onSnapshot(snapshot => {
+            dados.vendas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            atualizarInterface();
+        });
+
+        db.collection("clientes").onSnapshot(snapshot => {
+            dados.clientes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            atualizarInterface();
+        });
+
+        db.collection("financeiro").onSnapshot(snapshot => {
+            dados.financeiro = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            atualizarInterface();
+        });
+
+        // LOGIN E ABAS
         function realizarLogin(e) {
             e.preventDefault();
             const usr = document.getElementById('login-usuario').value.trim();
@@ -336,20 +380,11 @@
 
         function verificarSessao() {
             const estaLogado = localStorage.getItem('malika_logado') === 'true';
-            const telaLogin = document.getElementById('tela-login');
-            const telaSistema = document.getElementById('tela-sistema');
-
-            if (estaLogado) {
-                telaLogin.classList.add('hidden');
-                telaSistema.classList.remove('hidden');
-                atualizarInterface();
-            } else {
-                telaLogin.classList.remove('hidden');
-                telaSistema.classList.add('hidden');
-            }
+            document.getElementById('tela-login').classList.toggle('hidden', estaLogado);
+            document.getElementById('tela-sistema').classList.toggle('hidden', !estaLogado);
+            if (estaLogado) atualizarInterface();
         }
 
-        // LÓGICA DAS ABAS
         function mudarAba(abaId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(el => {
@@ -359,7 +394,6 @@
 
             const abaAlvo = document.getElementById('aba-' + abaId);
             const btnAtivo = document.getElementById('btn-' + abaId);
-
             if (abaAlvo) abaAlvo.classList.remove('hidden');
             if (btnAtivo) {
                 btnAtivo.classList.remove('border-transparent', 'text-slate-500');
@@ -367,62 +401,39 @@
             }
         }
 
-        // BANCO DE DADOS LOCAL
-        let dados = JSON.parse(localStorage.getItem('malika_semijoias_dados')) || {
-            estoque: [],
-            vendas: [],
-            clientes: [],
-            financeiro: []
-        };
-
-        function salvarDados() {
-            localStorage.setItem('malika_semijoias_dados', JSON.stringify(dados));
-            atualizarInterface();
-        }
-
-        // --- ESTOQUE ---
+        // SALVAR NO FIREBASE
         function adicionarProduto(e) {
             e.preventDefault();
-            const produto = {
-                id: Date.now(),
+            db.collection("estoque").add({
                 nome: document.getElementById('prod-nome').value,
                 categoria: document.getElementById('prod-categoria').value,
                 preco: parseFloat(document.getElementById('prod-preco').value),
                 qtd: parseInt(document.getElementById('prod-qtd').value)
-            };
-            dados.estoque.push(produto);
+            });
             document.getElementById('form-produto').reset();
-            salvarDados();
         }
 
         function removerProduto(id) {
-            dados.estoque = dados.estoque.filter(item => item.id !== id);
-            salvarDados();
+            db.collection("estoque").doc(id).delete();
         }
 
-        // --- CLIENTES ---
         function adicionarCliente(e) {
             e.preventDefault();
-            const cliente = {
-                id: Date.now(),
+            db.collection("clientes").add({
                 nome: document.getElementById('cli-nome').value,
                 tel: document.getElementById('cli-tel').value,
                 aniver: document.getElementById('cli-aniver').value || '-'
-            };
-            dados.clientes.push(cliente);
+            });
             document.getElementById('form-cliente').reset();
-            salvarDados();
         }
 
         function removerCliente(id) {
-            dados.clientes = dados.clientes.filter(item => item.id !== id);
-            salvarDados();
+            db.collection("clientes").doc(id).delete();
         }
 
-        // --- VENDAS ---
         function preencherPrecoVenda() {
             const prodId = document.getElementById('venda-produto').value;
-            const produto = dados.estoque.find(p => p.id == prodId);
+            const produto = dados.estoque.find(p => p.id === prodId);
             if (produto) {
                 const qtd = parseInt(document.getElementById('venda-qtd').value) || 1;
                 document.getElementById('venda-valor').value = (produto.preco * qtd).toFixed(2);
@@ -438,85 +449,78 @@
             const qtdVenda = parseInt(document.getElementById('venda-qtd').value);
             const valorTotal = parseFloat(document.getElementById('venda-valor').value);
 
-            const cliente = dados.clientes.find(c => c.id == clienteId);
-            const produto = dados.estoque.find(p => p.id == produtoId);
+            const cliente = dados.clientes.find(c => c.id === clienteId);
+            const produto = dados.estoque.find(p => p.id === produtoId);
 
             if (!produto || produto.qtd < qtdVenda) {
                 alert('Quantidade em estoque insuficiente!');
                 return;
             }
 
-            produto.qtd -= qtdVenda;
+            // Atualiza Estoque
+            db.collection("estoque").doc(produtoId).update({
+                qtd: produto.qtd - qtdVenda
+            });
 
-            const venda = {
-                id: Date.now(),
+            // Registra Venda
+            db.collection("vendas").add({
                 data: new Date().toLocaleDateString('pt-BR'),
                 cliente: cliente ? cliente.nome : 'Cliente Balcão',
                 produto: produto.nome,
                 qtd: qtdVenda,
                 valor: valorTotal
-            };
-            dados.vendas.push(venda);
+            });
 
-            dados.financeiro.push({
-                id: Date.now() + 1,
-                desc: `Venda: ${produto.nome} (${venda.cliente})`,
+            // Registra Financeiro
+            db.collection("financeiro").add({
+                desc: `Venda: ${produto.nome} (${cliente ? cliente.nome : 'Balcão'})`,
                 tipo: 'entrada',
                 valor: valorTotal
             });
 
             document.getElementById('form-venda').reset();
-            salvarDados();
         }
 
         function removerVenda(id) {
-            dados.vendas = dados.vendas.filter(item => item.id !== id);
-            salvarDados();
+            db.collection("vendas").doc(id).delete();
         }
 
-        // --- FINANCEIRO MANUAL ---
         function adicionarTransacao(e) {
             e.preventDefault();
-            const transacao = {
-                id: Date.now(),
+            db.collection("financeiro").add({
                 desc: document.getElementById('trans-desc').value,
                 tipo: document.getElementById('trans-tipo').value,
                 valor: parseFloat(document.getElementById('trans-valor').value)
-            };
-            dados.financeiro.push(transacao);
+            });
             document.getElementById('form-transacao').reset();
-            salvarDados();
         }
 
         function removerTransacao(id) {
-            dados.financeiro = dados.financeiro.filter(item => item.id !== id);
-            salvarDados();
+            db.collection("financeiro").doc(id).delete();
         }
 
-        // --- ATUALIZAR INTERFACE ---
+        // DESENHAR NA TELA
         function atualizarInterface() {
             // Select Clientes
             const selectCli = document.getElementById('venda-cliente');
             if (selectCli) {
-                const valAntigoCli = selectCli.value;
+                const valAntigo = selectCli.value;
                 selectCli.innerHTML = '<option value="">Selecione o Cliente</option>';
-                dados.clientes.forEach(c => {
-                    selectCli.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
-                });
-                selectCli.value = valAntigoCli;
+                dados.clientes.forEach(c => selectCli.innerHTML += `<option value="${c.id}">${c.nome}</option>`);
+                selectCli.value = valAntigo;
             }
 
             // Select Produtos
             const selectProd = document.getElementById('venda-produto');
             if (selectProd) {
-                const valAntigoProd = selectProd.value;
+                const valAntigo = selectProd.value;
                 selectProd.innerHTML = '<option value="">Selecione a Peça</option>';
                 dados.estoque.forEach(p => {
                     if(p.qtd > 0) {
                         selectProd.innerHTML += `<option value="${p.id}">${p.nome} (Estoque: ${p.qtd}) - R$ ${p.preco.toFixed(2)}</option>`;
                     }
                 });
-                selectProd.value = valAntigoProd;
+                selectProd.value = valAntigo;
             }
 
             // Tabela Estoque
@@ -533,7 +537,7 @@
                             <td class="p-4 text-slate-700 font-semibold">R$ ${item.preco.toFixed(2)}</td>
                             <td class="p-4 text-slate-700">${item.qtd}</td>
                             <td class="p-4 text-right">
-                                <button onclick="removerProduto(${item.id})" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 rounded bg-rose-50"><i class="fa-solid fa-trash"></i></button>
+                                <button onclick="removerProduto('${item.id}')" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 rounded bg-rose-50"><i class="fa-solid fa-trash"></i></button>
                             </td>
                         </tr>
                     `;
@@ -555,7 +559,7 @@
                             <td class="p-4 text-slate-700">${item.qtd}</td>
                             <td class="p-4 font-semibold text-emerald-600">R$ ${item.valor.toFixed(2)}</td>
                             <td class="p-4 text-right">
-                                <button onclick="removerVenda(${item.id})" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 rounded bg-rose-50"><i class="fa-solid fa-trash"></i></button>
+                                <button onclick="removerVenda('${item.id}')" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 rounded bg-rose-50"><i class="fa-solid fa-trash"></i></button>
                             </td>
                         </tr>
                     `;
@@ -573,7 +577,7 @@
                             <td class="p-4 text-slate-500">${item.tel}</td>
                             <td class="p-4 text-slate-500">${item.aniver}</td>
                             <td class="p-4 text-right">
-                                <button onclick="removerCliente(${item.id})" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 rounded bg-rose-50"><i class="fa-solid fa-trash"></i></button>
+                                <button onclick="removerCliente('${item.id}')" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 rounded bg-rose-50"><i class="fa-solid fa-trash"></i></button>
                             </td>
                         </tr>
                     `;
@@ -602,7 +606,7 @@
                                 ${item.tipo === 'entrada' ? '+' : '-'} R$ ${item.valor.toFixed(2)}
                             </td>
                             <td class="p-4 text-right">
-                                <button onclick="removerTransacao(${item.id})" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 rounded bg-rose-50"><i class="fa-solid fa-trash"></i></button>
+                                <button onclick="removerTransacao('${item.id}')" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 rounded bg-rose-50"><i class="fa-solid fa-trash"></i></button>
                             </td>
                         </tr>
                     `;
@@ -618,7 +622,6 @@
             if (elSaldo) elSaldo.innerText = `R$ ${(receita - despesa).toFixed(2)}`;
         }
 
-        // Inicializar verificação de sessão ao carregar a página
         document.addEventListener('DOMContentLoaded', () => {
             verificarSessao();
         });
