@@ -11,6 +11,15 @@
     <!-- SDKs do Firebase Versão Compatível -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            #relatorio-pdf, #relatorio-pdf * { visibility: visible; }
+            #relatorio-pdf { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; background: white; }
+            .no-print { display: none !important; }
+        }
+    </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
 
@@ -65,7 +74,7 @@
     <!-- TELA PRINCIPAL DO SISTEMA -->
     <div id="tela-sistema" class="hidden">
         <!-- CABEÇALHO -->
-        <header class="bg-amber-700 text-white shadow-md py-4 px-6 flex justify-between items-center">
+        <header class="bg-amber-700 text-white shadow-md py-4 px-6 flex justify-between items-center no-print">
             <h1 class="text-lg md:text-xl font-bold tracking-wide flex items-center gap-2">
                 <i class="fa-solid fa-gem"></i> Malika Semijóias
             </h1>
@@ -80,7 +89,7 @@
         </header>
 
         <!-- MENU DE ABAS -->
-        <nav class="bg-white shadow-sm border-b flex justify-around md:justify-start md:space-x-2 px-4 overflow-x-auto">
+        <nav class="bg-white shadow-sm border-b flex justify-around md:justify-start md:space-x-2 px-4 overflow-x-auto no-print">
             <button onclick="mudarAba('vendas')" id="btn-vendas" class="tab-btn py-3 px-4 border-b-2 border-amber-700 text-amber-700 font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-cash-register"></i> Vendas</button>
             <button onclick="mudarAba('estoque')" id="btn-estoque" class="tab-btn py-3 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-boxes-stacked"></i> Estoque</button>
             <button onclick="mudarAba('clientes')" id="btn-clientes" class="tab-btn py-3 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-users"></i> Clientes</button>
@@ -146,10 +155,19 @@
             <!-- ABA: ESTOQUE -->
             <section id="aba-estoque" class="tab-content hidden space-y-6">
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                    <div class="flex justify-between items-center mb-4">
+                    <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
                         <h2 id="titulo-form-produto" class="text-lg font-bold text-slate-700"><i class="fa-solid fa-plus-circle mr-2 text-amber-700"></i> Cadastrar Nova Semijoia</h2>
-                        <button id="btn-cancelar-edicao-produto" onclick="cancelarEdicaoProduto()" class="hidden text-xs bg-slate-200 hover:bg-slate-300 px-3 py-1 rounded-lg font-semibold text-slate-700">Cancelar Edição</button>
+                        <div class="flex gap-2">
+                            <!-- Botão para importar Excel/CSV -->
+                            <label class="cursor-pointer bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-3 py-2 rounded-lg font-semibold transition flex items-center gap-1">
+                                <i class="fa-solid fa-file-excel"></i> Importar Planilha CSV
+                                <input type="file" accept=".csv" onchange="importarPlanilhaEstoque(event)" class="hidden">
+                            </label>
+                            <button id="btn-cancelar-edicao-produto" onclick="cancelarEdicaoProduto()" class="hidden text-xs bg-slate-200 hover:bg-slate-300 px-3 py-1 rounded-lg font-semibold text-slate-700">Cancelar Edição</button>
+                        </div>
                     </div>
+                    <p class="text-xs text-slate-400 mb-4">* Para importar do Excel: salve sua planilha em formato **CSV (Delimitado por vírgula)** com as colunas: `nome`, `categoria`, `preco`, `qtd`.</p>
+                    
                     <form id="form-produto" onsubmit="salvarProduto(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <input type="hidden" id="prod-id-editando">
                         <div>
@@ -288,6 +306,29 @@
                     </div>
                 </div>
 
+                <!-- FILTRO E EXPORTAÇÃO PDF -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-700">Relatório Financeiro PDF</h2>
+                        <p class="text-xs text-slate-400">Filtre pelo período desejado para gerar o relatório impresso/PDF</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                        <div>
+                            <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-0.5">Data Inicial</label>
+                            <input type="date" id="filtro-data-inicio" class="border rounded-lg p-2 text-xs outline-none bg-slate-50">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-0.5">Data Final</label>
+                            <input type="date" id="filtro-data-fim" class="border rounded-lg p-2 text-xs outline-none bg-slate-50">
+                        </div>
+                        <div class="flex items-end mt-4 md:mt-0">
+                            <button onclick="gerarRelatorioPDF()" class="bg-slate-800 hover:bg-slate-900 text-white font-semibold px-4 py-2 rounded-lg text-xs transition flex items-center gap-1.5 h-[38px]">
+                                <i class="fa-solid fa-file-pdf text-rose-400"></i> Baixar Relatório PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
                     <h2 class="text-lg font-bold mb-4 text-slate-700">Lançamento Manual de Caixa</h2>
                     <form id="form-transacao" onsubmit="adicionarTransacao(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -320,6 +361,7 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b">
+                                    <th class="p-4">Data</th>
                                     <th class="p-4">Descrição</th>
                                     <th class="p-4">Tipo</th>
                                     <th class="p-4">Valor</th>
@@ -335,13 +377,48 @@
         </main>
     </div>
 
+    <!-- ÁREA OCULTA EXCLUSIVA PARA IMPRESSÃO DO PDF -->
+    <div id="relatorio-pdf" class="hidden">
+        <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #b45309; padding-bottom: 10px;">
+            <h2 style="font-size: 20px; font-weight: bold; color: #b45309; margin: 0;">Malika Semijóias - Relatório Financeiro</h2>
+            <p id="pdf-periodo-texto" style="font-size: 12px; color: #64748b; margin: 5px 0 0 0;">Período: Todos os lançamentos</p>
+        </div>
+        <div style="display: flex; justify-content: space-around; margin-bottom: 20px; text-align: center;">
+            <div style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; width: 30%;">
+                <span style="font-size: 10px; text-transform: uppercase; color: #64748b; display: block;">Total Entradas</span>
+                <strong id="pdf-total-receita" style="font-size: 16px; color: #059669;">R$ 0,00</strong>
+            </div>
+            <div style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; width: 30%;">
+                <span style="font-size: 10px; text-transform: uppercase; color: #64748b; display: block;">Total Saídas</span>
+                <strong id="pdf-total-despesa" style="font-size: 16px; color: #e11d48;">R$ 0,00</strong>
+            </div>
+            <div style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; width: 30%;">
+                <span style="font-size: 10px; text-transform: uppercase; color: #64748b; display: block;">Saldo do Período</span>
+                <strong id="pdf-total-saldo" style="font-size: 16px; color: #334155;">R$ 0,00</strong>
+            </div>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+            <thead>
+                <tr style="background: #f1f5f9; text-align: left; border-bottom: 1px solid #cbd5e1;">
+                    <th style="padding: 8px;">Data</th>
+                    <th style="padding: 8px;">Descrição</th>
+                    <th style="padding: 8px;">Tipo</th>
+                    <th style="padding: 8px; text-align: right;">Valor</th>
+                </tr>
+            </thead>
+            <tbody id="pdf-tabela-body"></tbody>
+        </table>
+        <div style="margin-top: 30px; text-align: right; font-size: 10px; color: #94a3b8;">
+            Relatório gerado em <span id="pdf-data-geracao"></span> pelo Sistema Malika Gestão Pro.
+        </div>
+    </div>
+
     <!-- SCRIPTS -->
     <script>
         // MÁSCARAS DE DIGITAÇÃO AUTOMÁTICA
         function mascaraTelefone(input) {
             let v = input.value.replace(/\D/g, "");
             if (v.length > 11) v = v.slice(0, 11);
-            
             if (v.length > 7) {
                 v = v.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
             } else if (v.length > 2) {
@@ -355,14 +432,13 @@
         function mascaraData(input) {
             let v = input.value.replace(/\D/g, "");
             if (v.length > 4) v = v.slice(0, 4);
-            
             if (v.length >= 3) {
                 v = v.replace(/^(\d{2})(\d{1,2})/, "$1/$2");
             }
             input.value = v;
         }
 
-        // COLE AQUI SUAS CHAVES DO FIREBASE
+        // CONFIGURAÇÃO DO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyBFU2xMISRxuR1j-JcBlKGNfL_sSGuyd5E",
             authDomain: "malika-sistema.firebaseapp.com",
@@ -373,13 +449,12 @@
             measurementId: "G-LHXLGC4BRF"
         };
 
-        // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
         let dados = { estoque: [], vendas: [], clientes: [], financeiro: [] };
 
-        // Escutando dados em Tempo Real do Firebase
+        // ESCUTANDO DADOS EM TEMPO REAL
         db.collection("estoque").onSnapshot(snapshot => {
             dados.estoque = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             atualizarInterface();
@@ -400,7 +475,7 @@
             atualizarInterface();
         });
 
-        // LOGIN E ABAS
+        // LOGIN E SESSÃO
         function realizarLogin(e) {
             e.preventDefault();
             const usr = document.getElementById('login-usuario').value.trim();
@@ -445,7 +520,46 @@
             }
         }
 
-        // --- ESTOQUE (COM EDIÇÃO E CADASTRO) ---
+        // --- IMPORTAR PLANILHA CSV NO ESTOQUE ---
+        function importarPlanilhaEstoque(e) {
+            const arquivo = e.target.files[0];
+            if (!arquivo) return;
+
+            const leitor = new FileReader();
+            leitor.onload = function(evt) {
+                const linhas = evt.target.result.split('\n');
+                let importados = 0;
+
+                // Ignora o cabeçalho (linha 0)
+                for (let i = 1; i < linhas.length; i++) {
+                    const linha = linhas[i].trim();
+                    if (!linha) continue;
+
+                    const colunas = linha.split(',');
+                    if (colunas.length >= 4) {
+                        const nome = colunas[0].trim().replace(/^["']|["']/g, '');
+                        const categoria = colunas[1].trim().replace(/^["']|["']/g, '');
+                        const preco = parseFloat(colunas[2].trim());
+                        const qtd = parseInt(colunas[3].trim());
+
+                        if (nome && !isNaN(preco) && !isNaN(qtd)) {
+                            db.collection("estoque").add({
+                                nome: nome,
+                                categoria: categoria || 'Brincos (Ouro)',
+                                preco: preco,
+                                qtd: qtd
+                            });
+                            importados++;
+                        }
+                    }
+                }
+                alert(`${importados} produtos foram importados com sucesso para o estoque!`);
+                e.target.value = ''; // Limpa o input file
+            };
+            leitor.readAsText(arquivo);
+        }
+
+        // --- ESTOQUE (EDIÇÃO E CADASTRO) ---
         function salvarProduto(e) {
             e.preventDefault();
             const idEditando = document.getElementById('prod-id-editando').value;
@@ -496,7 +610,7 @@
             }
         }
 
-        // --- CLIENTES (COM EDIÇÃO E CADASTRO) ---
+        // --- CLIENTES (EDIÇÃO E CADASTRO) ---
         function salvarCliente(e) {
             e.preventDefault();
             const idEditando = document.getElementById('cli-id-editando').value;
@@ -562,6 +676,7 @@
             const produtoId = document.getElementById('venda-produto').value;
             const qtdVenda = parseInt(document.getElementById('venda-qtd').value);
             const valorTotal = parseFloat(document.getElementById('venda-valor').value);
+            const dataAtual = new Date();
 
             const cliente = dados.clientes.find(c => c.id === clienteId);
             const produto = dados.estoque.find(p => p.id === produtoId);
@@ -576,7 +691,8 @@
             });
 
             db.collection("vendas").add({
-                data: new Date().toLocaleDateString('pt-BR'),
+                data: dataAtual.toLocaleDateString('pt-BR'),
+                dataISO: dataAtual.toISOString().split('T')[0],
                 cliente: cliente ? cliente.nome : 'Cliente Balcão',
                 produto: produto.nome,
                 qtd: qtdVenda,
@@ -584,6 +700,8 @@
             });
 
             db.collection("financeiro").add({
+                data: dataAtual.toLocaleDateString('pt-BR'),
+                dataISO: dataAtual.toISOString().split('T')[0],
                 desc: `Venda: ${produto.nome} (${cliente ? cliente.nome : 'Balcão'})`,
                 tipo: 'entrada',
                 valor: valorTotal
@@ -600,7 +718,10 @@
 
         function adicionarTransacao(e) {
             e.preventDefault();
+            const dataAtual = new Date();
             db.collection("financeiro").add({
+                data: dataAtual.toLocaleDateString('pt-BR'),
+                dataISO: dataAtual.toISOString().split('T')[0],
                 desc: document.getElementById('trans-desc').value,
                 tipo: document.getElementById('trans-tipo').value,
                 valor: parseFloat(document.getElementById('trans-valor').value)
@@ -612,6 +733,68 @@
             if(confirm('Deseja realmente excluir este lançamento?')) {
                 db.collection("financeiro").doc(id).delete();
             }
+        }
+
+        // --- GERAR RELATÓRIO PDF FINANCEIRO COM FILTRO DE DATA ---
+        function gerarRelatorioPDF() {
+            const dataInicio = document.getElementById('filtro-data-inicio').value;
+            const dataFim = document.getElementById('filtro-data-fim').value;
+
+            let itensFiltrados = dados.financeiro;
+
+            if (dataInicio && dataFim) {
+                itensFiltrados = dados.financeiro.filter(item => {
+                    const itemData = item.dataISO || '';
+                    return itemData >= dataInicio && itemData <= dataFim;
+                });
+                document.getElementById('pdf-periodo-texto').innerText = `Período: ${dataInicio.split('-').reverse().join('/')} até ${dataFim.split('-').reverse().join('/')}`;
+            } else if (dataInicio) {
+                itensFiltrados = dados.financeiro.filter(item => (item.dataISO || '') >= dataInicio);
+                document.getElementById('pdf-periodo-texto').innerText = `Período a partir de: ${dataInicio.split('-').reverse().join('/')}`;
+            } else if (dataFim) {
+                itensFiltrados = dados.financeiro.filter(item => (item.dataISO || '') <= dataFim);
+                document.getElementById('pdf-periodo-texto').innerText = `Período até: ${dataFim.split('-').reverse().join('/')}`;
+            } else {
+                document.getElementById('pdf-periodo-texto').innerText = `Período: Todos os lançamentos`;
+            }
+
+            let receitaPDF = 0;
+            let despesaPDF = 0;
+            let tbodyPDF = document.getElementById('pdf-tabela-body');
+            tbodyPDF.innerHTML = '';
+
+            if (itensFiltrados.length === 0) {
+                tbodyPDF.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 10px; color: #64748b;">Nenhum lançamento encontrado para o período selecionado.</td></tr>`;
+            } else {
+                itensFiltrados.forEach(item => {
+                    if (item.tipo === 'entrada') receitaPDF += item.valor;
+                    else despesaPDF += item.valor;
+
+                    tbodyPDF.innerHTML += `
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 6px;">${item.data || '-'}</td>
+                            <td style="padding: 6px;">${item.desc}</td>
+                            <td style="padding: 6px; font-weight: bold; color: ${item.tipo === 'entrada' ? '#059669' : '#e11d48'};">${item.tipo === 'entrada' ? 'Entrada' : 'Saída'}</td>
+                            <td style="padding: 6px; text-align: right; font-weight: bold; color: ${item.tipo === 'entrada' ? '#059669' : '#e11d48'};">${item.tipo === 'entrada' ? '+' : '-'} R$ ${item.valor.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            document.getElementById('pdf-total-receita').innerText = `R$ ${receitaPDF.toFixed(2)}`;
+            document.getElementById('pdf-total-despesa').innerText = `R$ ${despesaPDF.toFixed(2)}`;
+            const saldoFinal = receitaPDF - despesaPDF;
+            const elSaldoPDF = document.getElementById('pdf-total-saldo');
+            elSaldoPDF.innerText = `R$ ${saldoFinal.toFixed(2)}`;
+            elSaldoPDF.style.color = saldoFinal >= 0 ? '#059669' : '#e11d48';
+
+            document.getElementById('pdf-data-geracao').innerText = new Date().toLocaleString('pt-BR');
+
+            // Exibe a área do PDF, dispara a impressão e oculta novamente
+            const relatorioEl = document.getElementById('relatorio-pdf');
+            relatorioEl.classList.remove('hidden');
+            window.print();
+            relatorioEl.classList.add('hidden');
         }
 
         // DESENHAR NA TELA
@@ -707,6 +890,7 @@
 
                     tbodyFin.innerHTML += `
                         <tr class="hover:bg-slate-50">
+                            <td class="p-4 text-slate-500">${item.data || '-'}</td>
                             <td class="p-4 text-slate-700">${item.desc}</td>
                             <td class="p-4">
                                 <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${item.tipo === 'entrada' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
