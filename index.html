@@ -94,7 +94,7 @@
             <button onclick="mudarAba('vendas')" id="btn-vendas" class="tab-btn py-3 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-cash-register"></i> Vendas</button>
             <button onclick="mudarAba('estoque')" id="btn-estoque" class="tab-btn py-3 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-boxes-stacked"></i> Estoque</button>
             <button onclick="mudarAba('clientes')" id="btn-clientes" class="tab-btn py-3 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-users"></i> Clientes</button>
-            <button onclick="mudarAba('whatsapp')" id="btn-whatsapp" class="tab-btn py-3 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-sm flex items-center gap-2"><i class="fa-brands fa-whatsapp text-emerald-600"></i> WhatsApp em Massa</button>
+            <button onclick="mudarAba('whatsapp')" id="btn-whatsapp" class="tab-btn py-3 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-sm flex items-center gap-2"><i class="fa-brands fa-whatsapp text-emerald-600"></i> WhatsApp</button>
             <button onclick="mudarAba('financeiro')" id="btn-financeiro" class="tab-btn py-3 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-sm flex items-center gap-2"><i class="fa-solid fa-wallet"></i> Financeiro</button>
         </nav>
 
@@ -361,46 +361,24 @@
                 </div>
             </section>
 
-            <!-- ABA: WHATSAPP EM MASSA -->
+            <!-- ABA: WHATSAPP INDIVIDUAL -->
             <section id="aba-whatsapp" class="tab-content hidden space-y-6">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 space-y-4">
-                    <h2 class="text-lg font-bold text-slate-700 flex items-center gap-2">
-                        <i class="fa-brands fa-whatsapp text-emerald-600"></i> Central de Mensagens WhatsApp
-                    </h2>
-                    <p class="text-xs text-slate-500">Escreva sua mensagem promocional, escolha uma foto da galeria e faça seus disparos. Se o WhatsApp não estiver conectado, o navegador abrirá automaticamente a tela com o QR Code.</p>
-                    
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Mensagem Promocional</label>
-                            <textarea id="zap-mensagem" rows="4" placeholder="Olá! Temos novidades incríveis em semijoias folheadas na Malika. Venha conferir!" class="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Selecionar Imagem da Galeria (Opcional)</label>
-                            <input type="file" accept="image/*" id="zap-imagem-input" onchange="converterImagemZap(event)" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none bg-slate-50 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-emerald-100 file:text-emerald-800 hover:file:bg-emerald-200">
-                            <input type="hidden" id="zap-imagem-base64">
-                        </div>
-
-                        <!-- OPÇÕES DE ENVIO -->
-                        <div class="pt-2 flex flex-wrap gap-3">
-                            <button onclick="dispararParaTodos()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition shadow-sm flex items-center gap-2">
-                                <i class="fa-solid fa-paper-plane"></i> Disparar para Todos os Clientes (<span id="zap-contador-todos">0</span>)
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="p-4 border-b flex justify-between items-center">
-                        <h3 class="font-bold text-slate-700">Envio Individual por Cliente</h3>
-                        <span class="text-xs text-slate-500">Clique no botão ao lado de cada cliente para envio personalizado</span>
+                    <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                        <div>
+                            <h3 class="font-bold text-slate-700 flex items-center gap-2">
+                                <i class="fa-brands fa-whatsapp text-emerald-600 text-lg"></i> Envio de Mensagens via WhatsApp
+                            </h3>
+                            <p class="text-xs text-slate-500 mt-0.5">Clique no botão ao lado de cada cliente para iniciar o atendimento direto no WhatsApp.</p>
+                        </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b">
+                                <tr class="bg-slate-100/70 text-slate-500 text-xs uppercase tracking-wider border-b">
                                     <th class="p-4">Cliente</th>
-                                    <th class="p-4">WhatsApp</th>
-                                    <th class="p-4 text-right">Ação Individual</th>
+                                    <th class="p-4">WhatsApp / Telefone</th>
+                                    <th class="p-4 text-right">Ação</th>
                                 </tr>
                             </thead>
                             <tbody id="tabela-whatsapp-body" class="divide-y divide-slate-100 text-sm"></tbody>
@@ -578,16 +556,6 @@
             reader.readAsDataURL(arquivo);
         }
 
-        function converterImagemZap(e) {
-            const arquivo = e.target.files[0];
-            if (!arquivo) return;
-            const reader = new FileReader();
-            reader.onload = function(uploadEvt) {
-                document.getElementById('zap-imagem-base64').value = uploadEvt.target.result;
-            };
-            reader.readAsDataURL(arquivo);
-        }
-
         // CONFIGURAÇÃO DO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyBFU2xMISRxuR1j-JcBlKGNfL_sSGuyd5E",
@@ -678,57 +646,14 @@
             });
         }
 
-        // --- DISPARO EM MASSA WHATSAPP COM VERIFICAÇÃO DE SESSÃO / QR CODE ---
-        function dispararParaTodos() {
-            const textoBase = document.getElementById('zap-mensagem').value.trim();
-            const imgBase64 = document.getElementById('zap-imagem-base64').value.trim();
-
-            if (!textoBase) {
-                alert('Por favor, digite a mensagem promocional antes de disparar.');
-                document.getElementById('zap-mensagem').focus();
-                return;
-            }
-
-            if (dados.clientes.length === 0) {
-                alert('Não há clientes cadastrados para o envio.');
-                return;
-            }
-
-            if (confirm(`Deseja iniciar o envio em massa para todos os ${dados.clientes.length} clientes cadastrados?\n\nNota: Se o WhatsApp Web não estiver conectado neste navegador, ele abrirá automaticamente na tela de QR Code para você parear.`)) {
-                dados.clientes.forEach((cliente, index) => {
-                    let foneLimpo = cliente.tel.replace(/\D/g, '');
-                    if (foneLimpo.length <= 11 && !foneLimpo.startsWith('55')) {
-                        foneLimpo = '55' + foneLimpo;
-                    }
-
-                    let mensagemFinal = `Olá *${cliente.nome}*! 👋\n\n` + textoBase;
-                    if (imgBase64) {
-                        mensagemFinal += `\n\n📸 [Imagem anexada selecionada da galeria]`;
-                    }
-
-                    const urlZap = `https://wa.me/${foneLimpo}?text=${encodeURIComponent(mensagemFinal)}`;
-                    
-                    setTimeout(() => {
-                        window.open(urlZap, '_blank');
-                    }, index * 1200);
-                });
-            }
-        }
-
-        // --- ENVIO INDIVIDUAL CORRIGIDO (SEM PULAR PARA O DASHBOARD) ---
+        // --- ENVIO INDIVIDUAL PARA WHATSAPP ---
         function enviarIndividual(fone, nomeCliente) {
             let foneLimpo = fone.replace(/\D/g, '');
             if (foneLimpo.length <= 11 && !foneLimpo.startsWith('55')) {
                 foneLimpo = '55' + foneLimpo;
             }
 
-            let textoBase = document.getElementById('zap-mensagem').value.trim();
-            let mensagemFinal = `Olá *${nomeCliente}*! 👋\n\n` + textoBase;
-            const imgBase64 = document.getElementById('zap-imagem-base64').value.trim();
-            if (imgBase64) {
-                mensagemFinal += `\n\n📸 [Imagem anexada selecionada da galeria]`;
-            }
-
+            let mensagemFinal = `Olá *${nomeCliente}*! 👋\n\nComo posso te ajudar hoje na Malika Semijóias?`;
             const urlZap = `https://wa.me/${foneLimpo}?text=${encodeURIComponent(mensagemFinal)}`;
             window.open(urlZap, '_blank');
         }
@@ -1222,9 +1147,6 @@
             if (document.getElementById('dash-pendentes')) document.getElementById('dash-pendentes').innerText = `R$ ${totalPendentes.toFixed(2)}`;
             if (document.getElementById('dash-pecas')) document.getElementById('dash-pecas').innerText = `${totalPecas} peças`;
 
-            const elZapContador = document.getElementById('zap-contador-todos');
-            if (elZapContador) elZapContador.innerText = dados.clientes.length;
-
             const tbodyZap = document.getElementById('tabela-whatsapp-body');
             if (tbodyZap) {
                 tbodyZap.innerHTML = '';
@@ -1240,8 +1162,8 @@
                                 <td class="p-4 font-medium text-slate-700">${cliente.nome}</td>
                                 <td class="p-4 text-slate-500">${cliente.tel}</td>
                                 <td class="p-4 text-right">
-                                    <button onclick="enviarIndividual('${telSeguro}', '${nomeSeguro}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-2 rounded-lg font-semibold transition inline-flex items-center gap-1.5 shadow-sm" title="Abre o WhatsApp (se desconectado, mostrará o QR Code)">
-                                        <i class="fa-brands fa-whatsapp text-sm"></i> Enviar Individual
+                                    <button onclick="enviarIndividual('${telSeguro}', '${nomeSeguro}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-2 rounded-lg font-semibold transition inline-flex items-center gap-1.5 shadow-sm" title="Abrir conversa no WhatsApp">
+                                        <i class="fa-brands fa-whatsapp text-sm"></i> Enviar Mensagem
                                     </button>
                                 </td>
                             </tr>
