@@ -678,7 +678,7 @@
             });
         }
 
-        // --- DISPARO EM MASSA WHATSAPP COM VERIFICAÇÃO DE CONEXÃO / QR CODE ---
+        // --- DISPARO EM MASSA WHATSAPP COM VERIFICAÇÃO DE SESSÃO / QR CODE ---
         function dispararParaTodos() {
             const textoBase = document.getElementById('zap-mensagem').value.trim();
             const imgBase64 = document.getElementById('zap-imagem-base64').value.trim();
@@ -706,15 +706,31 @@
                         mensagemFinal += `\n\n📸 [Imagem anexada selecionada da galeria]`;
                     }
 
-                    // Usando o protocolo web.whatsapp.com / wa.me para garantir verificação de sessão/QR Code
                     const urlZap = `https://wa.me/${foneLimpo}?text=${encodeURIComponent(mensagemFinal)}`;
                     
-                    // Intervalo escalonado (1200ms) para que o navegador abra as abas de forma controlada sem falhas de carregamento do QR Code
                     setTimeout(() => {
                         window.open(urlZap, '_blank');
                     }, index * 1200);
                 });
             }
+        }
+
+        // --- ENVIO INDIVIDUAL CORRIGIDO (SEM PULAR PARA O DASHBOARD) ---
+        function enviarIndividual(fone, nomeCliente) {
+            let foneLimpo = fone.replace(/\D/g, '');
+            if (foneLimpo.length <= 11 && !foneLimpo.startsWith('55')) {
+                foneLimpo = '55' + foneLimpo;
+            }
+
+            let textoBase = document.getElementById('zap-mensagem').value.trim();
+            let mensagemFinal = `Olá *${nomeCliente}*! 👋\n\n` + textoBase;
+            const imgBase64 = document.getElementById('zap-imagem-base64').value.trim();
+            if (imgBase64) {
+                mensagemFinal += `\n\n📸 [Imagem anexada selecionada da galeria]`;
+            }
+
+            const urlZap = `https://wa.me/${foneLimpo}?text=${encodeURIComponent(mensagemFinal)}`;
+            window.open(urlZap, '_blank');
         }
 
         // --- IMPORTAR PLANILHA CSV NO ESTOQUE ---
@@ -1216,25 +1232,17 @@
                     tbodyZap.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400">Nenhum cliente cadastrado.</td></tr>`;
                 } else {
                     dados.clientes.forEach(cliente => {
-                        let foneLimpo = cliente.tel.replace(/\D/g, '');
-                        if (foneLimpo.length <= 11 && !foneLimpo.startsWith('55')) {
-                            foneLimpo = '55' + foneLimpo;
-                        }
-
-                        const gerarLinkIndividual = () => {
-                            let textoBase = document.getElementById('zap-mensagem').value.trim();
-                            let mensagemFinal = `Olá *${cliente.nome}*! 👋\n\n` + textoBase;
-                            return `https://wa.me/${foneLimpo}?text=${encodeURIComponent(mensagemFinal)}`;
-                        };
+                        let nomeSeguro = cliente.nome.replace(/'/g, "\\'");
+                        let telSeguro = cliente.tel.replace(/'/g, "\\'");
 
                         tbodyZap.innerHTML += `
                             <tr class="hover:bg-slate-50">
                                 <td class="p-4 font-medium text-slate-700">${cliente.nome}</td>
                                 <td class="p-4 text-slate-500">${cliente.tel}</td>
                                 <td class="p-4 text-right">
-                                    <a href="#" onclick="this.href=gerarLinkIndividual()" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-2 rounded-lg font-semibold transition inline-flex items-center gap-1.5 shadow-sm" title="Abre o WhatsApp (se desconectado, mostrará o QR Code)">
+                                    <button onclick="enviarIndividual('${telSeguro}', '${nomeSeguro}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-2 rounded-lg font-semibold transition inline-flex items-center gap-1.5 shadow-sm" title="Abre o WhatsApp (se desconectado, mostrará o QR Code)">
                                         <i class="fa-brands fa-whatsapp text-sm"></i> Enviar Individual
-                                    </a>
+                                    </button>
                                 </td>
                             </tr>
                         `;
